@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>現場擴音</AssemblyName>
     <RootNamespace>DJIPA</RootNamespace>
-    <Version>0.2.1</Version>
+    <Version>0.3.0</Version>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <InvariantGlobalization>true</InvariantGlobalization>
     <ApplicationIcon>AppIcon.ico</ApplicationIcon>
