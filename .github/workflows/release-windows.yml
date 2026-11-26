@@ -27,7 +27,8 @@ jobs:
           Copy-Item Windows/publish/現場擴音.exe $dir/
           Compress-Archive -Path $dir/* -DestinationPath "$dir.zip"
           $hash = (Get-FileHash "$dir.zip" -Algorithm SHA256).Hash.ToLower()
-          "$hash  $dir.zip" | Out-File "$dir.zip.sha256" -Encoding ascii
+          # 用 LF 結尾，macOS／Linux 的 shasum -c 才能驗證
+          "$hash  $dir.zip`n" | Out-File "$dir.zip.sha256" -Encoding ascii -NoNewline
           "ASSET=$dir.zip" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
       - name: 上傳到 Release
         shell: bash
