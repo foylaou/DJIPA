@@ -1,0 +1,40 @@
+# 推 v* tag 時建置 Windows 版，附加到同名 Release（沒有就建立）。
+# macOS 版仍由作者以自己的憑證簽名後手動上傳，這裡不覆蓋。
+name: Release (Windows)
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: 打包
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}".TrimStart("v")
+          ./Windows/build.ps1
+          $dir = "LivePA-$ver-windows-x64"
+          New-Item -ItemType Directory $dir | Out-Null
+          Copy-Item Windows/publish/現場擴音.exe $dir/
+          Compress-Archive -Path $dir/* -DestinationPath "$dir.zip"
+          $hash = (Get-FileHash "$dir.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $dir.zip" | Out-File "$dir.zip.sha256" -Encoding ascii
+          "ASSET=$dir.zip" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+      - name: 上傳到 Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ github.ref_name }}" >/dev/null 2>&1 \
+            || gh release create "${{ github.ref_name }}" --title "現場擴音 ${{ github.ref_name }}" \
+                 --notes "Windows 版：解壓後執行「現場擴音.exe」。未簽名，SmartScreen 可能攔截，按「其他資訊 → 仍要執行」。"
+          gh release upload "${{ github.ref_name }}" "$ASSET" "$ASSET.sha256" --clobber

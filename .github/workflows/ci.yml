@@ -1,0 +1,31 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 離線測試（限幅、靜音、效果器）
+        run: ./test.sh
+      - name: 編譯並打包（臨時簽名）
+        run: ./build.sh
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: 單元測試（訊號處理，離線）
+        run: dotnet test Windows/Tests/DJIPA.Windows.Tests.csproj -c Release
+      - name: 編譯
+        run: dotnet build Windows/DJIPA.Windows.csproj -c Release
